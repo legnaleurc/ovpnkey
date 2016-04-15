@@ -28,8 +28,7 @@ class IndexHandler(web.RequestHandler):
 
 class OpenVPNHandler(web.RequestHandler):
 
-    @gen.coroutine
-    def get(self):
+    async def get(self):
         email = self.get_argument('email', None)
         if not email:
             self.set_status(400)
@@ -43,7 +42,7 @@ class OpenVPNHandler(web.RequestHandler):
 
         with open(os.devnull, 'w') as null:
             p = process.Subprocess(['./gk.sh', EASY_RSA_ROOT, email, name], stdout=null, stderr=null)
-            exit_code = yield gen.Task(p.set_exit_callback)
+            exit_code = await p.wait_for_exit()
 
         if exit_code != 0:
             self.set_status(400)
@@ -62,7 +61,7 @@ class OpenVPNHandler(web.RequestHandler):
             self.set_header('Content-Type', 'application/octet-stream')
             self.set_header('Content-Disposition', 'attachment; filename="{0}.zip"'.format(name))
             self.write(fout.read())
-            yield self.flush()
+            await self.flush()
 
 
 def check_name(name):
