@@ -77,12 +77,14 @@ def parse_args(args):
     parser = argparse.ArgumentParser('ovpnkey')
 
     parser.add_argument('-l', '--listen', type=str, action='append')
+    parser.add_argument('-h', '--openvpn-host', required=True, type=str)
     parser.add_argument('-p', '--openvpn-port', nargs='?', type=int, default=1194)
     parser.add_argument('-e', '--easy-rsa-path', required=True, type=str)
 
     args = parser.parse_args(args)
     safe_args = {}
     safe_args['listen'] = [verify_listen_string(_) for _ in args.listen]
+    safe_args['openvpn_host'] = args.openvpn_host
     safe_args['openvpn_port'] = args.openvpn_port
     safe_args['easy_rsa_path'] = args.easy_rsa_path
 
@@ -134,7 +136,7 @@ def main(args=None):
     application = web.Application([
         (r'/', views.IndexHandler),
         (r'/key', api.OpenVPNHandler),
-    ], openvpn_port=args['openvpn_port'], easy_rsa_path=args['easy_rsa_path'])
+    ], openvpn_host=args['openvpn_host'], openvpn_port=args['openvpn_port'], easy_rsa_path=args['easy_rsa_path'])
     server = httpserver.HTTPServer(application)
     with create_sockets(args['listen']) as sockets:
         server.add_sockets(sockets)
