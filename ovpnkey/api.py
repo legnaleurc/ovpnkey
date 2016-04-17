@@ -8,6 +8,7 @@ import zipfile
 from tornado import web, process
 
 from . import utils
+from .resources import gk_sh, client_conf
 
 
 class OpenVPNHandler(web.RequestHandler):
@@ -26,7 +27,7 @@ class OpenVPNHandler(web.RequestHandler):
 
         easy_rsa_path = self.settings['easy_rsa_path']
         with open(os.devnull, 'w') as null:
-            p = process.Subprocess(['./gk.sh', easy_rsa_path, email, name], stdout=null, stderr=null)
+            p = process.Subprocess([gk_sh, easy_rsa_path, email, name], stdout=null, stderr=null)
             exit_code = await p.wait_for_exit()
 
         if exit_code != 0:
@@ -36,7 +37,7 @@ class OpenVPNHandler(web.RequestHandler):
         prefix = name
         with tempfile.TemporaryFile() as fout:
             with zipfile.ZipFile(fout, 'w') as zout:
-                with open('./client.conf', 'r') as tpl:
+                with open(client_conf, 'r') as tpl:
                     openvpn_host = self.settings['openvpn_host']
                     openvpn_port = self.settings['openvpn_port']
                     zout.writestr('{0}/client.conf'.format(prefix), tpl.read().format(host=openvpn_host, port=openvpn_port, name=name))

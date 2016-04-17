@@ -77,7 +77,7 @@ def parse_args(args):
     parser = argparse.ArgumentParser('ovpnkey')
 
     parser.add_argument('-l', '--listen', type=str, action='append')
-    parser.add_argument('-h', '--openvpn-host', required=True, type=str)
+    parser.add_argument('-n', '--openvpn-host', required=True, type=str)
     parser.add_argument('-p', '--openvpn-port', nargs='?', type=int, default=1194)
     parser.add_argument('-e', '--easy-rsa-path', required=True, type=str)
 
