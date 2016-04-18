@@ -43,7 +43,7 @@ class OpenVPNHandler(web.RequestHandler):
         with open(os.path.join(easy_rsa_path, 'keys/ta.key'), 'r') as fin:
             data['tls_auth'] = fin.read()
         with open(os.path.join(easy_rsa_path, 'keys/{0}.crt'.format(name)), 'r') as fin:
-            data['crt'] = fin.read()
+            data['cert'] = fin.read()
         with open(os.path.join(easy_rsa_path, 'keys/{0}.key'.format(name)), 'r') as fin:
             data['key'] = fin.read()
         output = client_ovpn.format(**data)
