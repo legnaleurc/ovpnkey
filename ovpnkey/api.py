@@ -8,7 +8,7 @@ import zipfile
 from tornado import web, process
 
 from . import utils
-from .resources import gk_sh, client_conf
+from .resources import gk_sh, client_ovpn
 
 
 class OpenVPNHandler(web.RequestHandler):
@@ -34,19 +34,21 @@ class OpenVPNHandler(web.RequestHandler):
             self.set_status(400)
             return
 
-        prefix = name
-        with tempfile.TemporaryFile() as fout:
-            with zipfile.ZipFile(fout, 'w') as zout:
-                with open(client_conf, 'r') as tpl:
-                    openvpn_host = self.settings['openvpn_host']
-                    openvpn_port = self.settings['openvpn_port']
-                    zout.writestr('{0}/client.conf'.format(prefix), tpl.read().format(host=openvpn_host, port=openvpn_port, name=name))
-                zout.write('{0}/keys/ca.crt'.format(easy_rsa_path), '{0}/ca.crt'.format(prefix))
-                zout.write('{0}/keys/{1}.crt'.format(easy_rsa_path, name), '{0}/{1}.crt'.format(prefix, name))
-                zout.write('{0}/keys/{1}.key'.format(easy_rsa_path, name), '{0}/{1}.key'.format(prefix, name))
-            fout.seek(0, 0)
+        data = {
+            'host': self.settings['openvpn_host'],
+            'port': self.settings['openvpn_port'],
+        }
+        with open(os.path.join(easy_rsa_path, 'keys/ca.crt'), 'r') as fin:
+            data['ca'] = fin.read()
+        with open(os.path.join(easy_rsa_path, 'keys/ta.key'), 'r') as fin:
+            data['tls_auth'] = fin.read()
+        with open(os.path.join(easy_rsa_path, 'keys/{0}.crt'.format(name)), 'r') as fin:
+            data['crt'] = fin.read()
+        with open(os.path.join(easy_rsa_path, 'keys/{0}.key'.format(name)), 'r') as fin:
+            data['key'] = fin.read()
+        output = client_ovpn.format(**data)
 
-            self.set_header('Content-Type', 'application/octet-stream')
-            self.set_header('Content-Disposition', 'attachment; filename="{0}.zip"'.format(name))
-            self.write(fout.read())
-            await self.flush()
+        self.set_header('Content-Type', 'application/octet-stream')
+        self.set_header('Content-Disposition', 'attachment; filename="{0}.ovpn"'.format(name))
+        self.write(output.encode('utf-8'))
+        await self.flush()
