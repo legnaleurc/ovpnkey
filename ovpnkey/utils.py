@@ -104,7 +104,8 @@ def verify_listen_string(listen):
 
 
 def verify_ipv4(ipv4):
-    m = re.match(r'^(0|([1-9][0-9]{0,2}))\.(0|([1-9][0-9]{0,2}))\.(0|([1-9][0-9]{0,2}))\.(0|([1-9][0-9]{0,2}))$', ipv4)
+    m = r'(0|([1-9][0-9]{0,2}))'
+    m = re.match(r'^{0}\.{0}\.{0}\.{0}$'.format(m), ipv4)
     if m:
         m = m.groups()
         m = [m[_] for _ in range(0, len(m), 2)]
