@@ -47,6 +47,8 @@ class OpenVPNHandler(web.RequestHandler):
         with open(os.path.join(easy_rsa_path, 'keys/{0}.key'.format(name)), 'r') as fin:
             data['key'] = fin.read()
         output = client_ovpn.format(**data)
+        output = filter(lambda _: _, output.splitlines())
+        output = '\n'.join(output) + '\n'
 
         self.set_header('Content-Type', 'application/octet-stream')
         self.set_header('Content-Disposition', 'attachment; filename="{0}.ovpn"'.format(name))
